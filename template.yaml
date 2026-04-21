@@ -1,0 +1,45 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: proxy-repro-template
+  title: Proxy Repro Template
+  description: Minimal template to test github repo create + push behind a proxy
+spec:
+  owner: user:default/guest
+  type: service
+  parameters:
+    - title: Repo Info
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Repo Name
+          type: string
+          default: proxy-test-repo
+        owner:
+          title: GitHub Owner
+          type: string
+          default: polasudo
+  steps:
+    - id: fetch
+      name: Fetch Skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        repoUrl: github.com?owner=${{ parameters.owner }}&repo=${{ parameters.name }}
+        repoVisibility: public
+        defaultBranch: main
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
